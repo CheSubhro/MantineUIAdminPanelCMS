@@ -1,0 +1,25 @@
+meta {
+  name: Register
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  name: Tanvir Ahmed @contentType(Text)
+  username: tanvir123 @contentType(Text)
+  email: tanvir@example.com @contentType(Text)
+  password: {{password}} @contentType(Text)
+  avatar: @file(C:\Users\CHE\Downloads\screencapture-localhost-5173-analytics-2026-08-05-10_19_50.png) @contentType(image/png)
+  coverImage: @file(C:\Users\CHE\Downloads\WhatsApp Image 2026-07-01 at 6.31.48 PM.jpeg) @contentType(image/jpeg)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

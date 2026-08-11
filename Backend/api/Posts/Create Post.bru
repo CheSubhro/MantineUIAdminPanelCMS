@@ -1,0 +1,27 @@
+meta {
+  name: Create Post
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/posts
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  title: demo @contentType(Text)
+  slug: demo @contentType(Text)
+  excerpt: demo @contentType(Text)
+  category: Technology @contentType(Text)
+  author: Subhro Mondal @contentType(Text)
+  status: Published @contentType(Text)
+  image: @file(C:\Users\CHE\Downloads\Gemini_Generated_Image_qvunpnqvunpnqvun.png) @contentType(image/png)
+  content: In this comprehensive guide, we will explore modern web development practices. From setting up a blazing-fast project with Vite to handling backend operations securely, you'll learn everything you need to know to become a professional developer @contentType(Text)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

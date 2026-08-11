@@ -1,0 +1,20 @@
+meta {
+  name: Delete Media
+  type: http
+  seq: 15
+}
+
+delete {
+  url: {{baseUrl}}/media/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

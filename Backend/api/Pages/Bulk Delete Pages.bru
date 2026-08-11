@@ -1,0 +1,22 @@
+meta {
+  name: Bulk Delete Pages
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/pages/bulk
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "ids": ["6a75bb03e133a1532c5ea817", "6a75b9ea13f2f2ed837ac66c"]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

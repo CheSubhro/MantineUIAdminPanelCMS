@@ -1,0 +1,24 @@
+meta {
+  name: Create Category
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/categories
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  name: Technology1 @contentType(Text)
+  slug: technology1 @contentType(Text)
+  description: Latest tech news and updates @contentType(Text)
+  status: Active @contentType(Text)
+  image: @file(C:\Users\CHE\Downloads\screencapture-localhost-5173-media-2026-08-05-10_20_05.png) @contentType(image/png)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,16 @@
+meta {
+  name: RefreshToken
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/auth/refresh-token
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

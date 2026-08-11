@@ -1,0 +1,22 @@
+meta {
+  name: Bulk Delete Categories
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/categories/bulk
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "ids": ["6a79d661bf2df25577503070", "6a79d60dee4a5099f1d4376d"]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

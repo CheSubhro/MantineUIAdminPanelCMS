@@ -1,0 +1,22 @@
+meta {
+  name: Update Comment
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/comments/6a79625866e9e2515cee201c
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "status": "approved"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

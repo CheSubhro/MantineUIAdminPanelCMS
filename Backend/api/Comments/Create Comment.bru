@@ -1,0 +1,26 @@
+meta {
+  name: Create Comment
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/comments
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "author": "John Doe1",
+      "email": "john@example.com",
+      "content": "This is a very informative blog post!",
+      "postId": "6a79612ae0a43dcf4e858c80",
+      "postTitle": "Modern Web Development with React1"
+    }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

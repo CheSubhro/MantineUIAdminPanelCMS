@@ -1,0 +1,24 @@
+meta {
+  name: Upload Media
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/media/upload
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:multipart-form {
+  file: @file(C:\Users\CHE\Downloads\screencapture-localhost-5173-dashboard-2026-08-05-10_15_22.png) @contentType(image/png)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

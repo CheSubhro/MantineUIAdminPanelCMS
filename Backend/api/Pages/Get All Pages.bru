@@ -1,0 +1,16 @@
+meta {
+  name: Get All Pages
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/pages
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

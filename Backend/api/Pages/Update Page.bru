@@ -1,0 +1,22 @@
+meta {
+  name: Update Page
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/pages/6a75b461af17a55b108bfd9c
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "title": "Updated Bruno Title"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

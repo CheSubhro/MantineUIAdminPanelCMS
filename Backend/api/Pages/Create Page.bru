@@ -1,0 +1,27 @@
+meta {
+  name: Create Page
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/pages
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "title": "Bruno Test Page1",
+      "slug": "bruno-test-page1",
+      "author": "Subhro Mondal",
+      "status": "Published",
+      "excerpt": "Testing via Bruno API client",
+      "content": "This is content created from Bruno."
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

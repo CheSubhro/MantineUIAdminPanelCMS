@@ -1,0 +1,22 @@
+meta {
+  name: Bulk Delete Comments
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/comments/bulk
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "ids": ["6a796600b02aa498eee26584", "6a7965f6b02aa498eee26582"]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

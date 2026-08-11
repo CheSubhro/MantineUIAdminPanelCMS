@@ -1,0 +1,16 @@
+meta {
+  name: Delete Single Comment
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/comments/6a79625866e9e2515cee201c
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

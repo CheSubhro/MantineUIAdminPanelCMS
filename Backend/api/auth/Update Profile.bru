@@ -1,0 +1,22 @@
+meta {
+  name: Update Profile
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/auth/update
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  avatar: @file(C:\Users\CHE\Downloads\jonatan-pie-h8nxGssjQXs-unsplash.jpg) @contentType(image/jpeg)
+  coverImage: @file(C:\Users\CHE\Downloads\904c7587f4baa4a79d222a3d0d142044.jpg) @contentType(image/jpeg)
+  name: Siltu @contentType(Text)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

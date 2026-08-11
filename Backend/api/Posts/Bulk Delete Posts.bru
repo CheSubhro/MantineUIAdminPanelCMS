@@ -1,0 +1,22 @@
+meta {
+  name: Bulk Delete Posts
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/posts/bulk
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "ids": ["6a75e78a86470564453c9c1c", "6a75e52086470564453c9c0a"]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

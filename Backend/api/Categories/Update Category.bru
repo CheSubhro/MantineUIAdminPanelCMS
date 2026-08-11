@@ -1,0 +1,23 @@
+meta {
+  name: Update Category
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/categories/6a79d2f588cf9858d69a522b
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  name: Updated Technology @contentType(Text)
+  slug: updated technology @contentType(Text)
+  status: Inactive @contentType(Text)
+  image: @file(C:\Users\CHE\Downloads\screencapture-localhost-5173-comments-2026-08-05-10_20_18.png) @contentType(image/png)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
