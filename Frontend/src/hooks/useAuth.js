@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showToast } from '../utils/toast';
+import api from '../services/api';
 
 export const useAuth = () => {
     
@@ -11,53 +12,74 @@ export const useAuth = () => {
     const [error, setError] = useState(null);
 
     // Register Handler
-    const register = (formData) => {
+    const register = async (formData) => {
         setLoading(true);
         setError(null);
+        
         try {
-            // Saving mock user data to localStorage
-            localStorage.setItem('admin_user', JSON.stringify(formData));
-            setUser(formData);
+            const data = new FormData();
+            data.append('name', formData.fullName); 
+            data.append('username', formData.username);
+            data.append('email', formData.email);
+            data.append('password', formData.password);
+            data.append('role', formData.role);
+
+            if (formData.avatar) {
+                data.append('avatar', formData.avatar);
+            }
+            if (formData.coverImage) {
+                data.append('coverImage', formData.coverImage);
+            }
+
+            const response = await api.post('/auth/register', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
             setLoading(false);
-            showToast.success('Registration Successful', 'Please login with your credentials.');
+            showToast.success('Registration Successful', response.data.message || 'Please login with your credentials.');
             navigate('/login');
             return true;
+
         } catch (err) {
-            setError('Registration failed. Please try again.');
+            const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
+            setError(errorMessage);
             setLoading(false);
-            showToast.error('Registration Failed', 'Please try again.');
+            showToast.error('Registration Failed', errorMessage);
             return false;
         }
     };
 
     // Login Handler (supports both username or email in a single input)
-    const login = (identifier, password) => {
+    const login = async (identifier, password) => {
         setLoading(true);
         setError(null);
         
-        const storedUser = JSON.parse(localStorage.getItem('admin_user'));
+        try {
+            const response = await api.post('/auth/login', {
+                identifier,
+                password
+            });
 
-        if (!storedUser) {
-            setError('No account found. Please register first.');
+            const { user, accessToken } = response.data.data;
+
+            localStorage.setItem('admin_user', JSON.stringify(user));
+            if (accessToken) {
+                localStorage.setItem('token', accessToken);
+            }
+
+            setUser(user);
             setLoading(false);
-            showToast.error('Account Not Found', 'Please register first.');
-            return false;
-        }
-
-        const isMatch = 
-            (storedUser.username === identifier || storedUser.email === identifier) && 
-            storedUser.password === password;
-
-        if (isMatch) {
-            setUser(storedUser);
-            setLoading(false);
-            showToast.success('Welcome Back', 'Logged in successfully.');
-            navigate('/dashboard');
+            showToast.success('Welcome Back', response.data.message || 'Logged in successfully.');
+            useNavigateInstance('/dashboard');
             return true;
-        } else {
-            setError('Invalid username/email or password.');
+
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Invalid username/email or password.';
+            setError(errorMessage);
             setLoading(false);
-            showToast.error('Login Failed', 'Invalid username/email or password.');
+            showToast.error('Login Failed', errorMessage);
             return false;
         }
     };

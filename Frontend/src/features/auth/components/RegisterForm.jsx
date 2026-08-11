@@ -21,7 +21,7 @@ export default function RegisterForm({ onSubmit }) {
             username: '',
             email: '',
             password: '',
-            role: 'Admin',
+            role: 'User', 
             avatar: null,
             coverImage: null,
         },
@@ -74,7 +74,21 @@ export default function RegisterForm({ onSubmit }) {
                             label="Role"
                             placeholder="Select role"
                             leftSection={<IconShieldCheck size={16} />}
-                            data={['Super Admin', 'Admin', 'Moderator', 'Editor']}
+                            data={[
+                                'Super_Admin',
+                                'Admin',
+                                'Manager',
+                                'Moderator',
+                                'Editor',
+                                'User',
+                                'Author',
+                                'Contributor',
+                                'Developer',
+                                'Customer_Support',
+                                'Seller',
+                                'Rider',
+                                'Accountant'
+                            ]}
                             value={field.value}
                             onChange={field.onChange}
                             error={errors.role?.message}

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, Badge, Button } from '../../../components/common';
+import { Card, Badge } from '../../../components/common';
 
 export const ProfileDetails = ({ user }) => {
     return (
@@ -9,14 +9,14 @@ export const ProfileDetails = ({ user }) => {
                 <div className="flex flex-col items-center text-center">
                     {/* Avatar Image */}
                     <img
-                        src={user?.avatar || 'https://via.placeholder.com/150'}
-                        alt={user?.fullName || 'User Avatar'}
+                        src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user?.name'}
+                        alt={user?.name || user?.fullName || 'User Avatar'}
                         className="w-24 h-24 rounded-full object-cover border-4 border-violet-500 shadow-sm mb-4"
                     />
 
-                    {/* Full Name & Username */}
+                    {/* Name & Username */}
                     <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                        {user?.fullName || 'Anonymous User'}
+                        {user?.name || user?.fullName || 'Anonymous User'}
                     </h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
                         @{user?.username || 'username'}
