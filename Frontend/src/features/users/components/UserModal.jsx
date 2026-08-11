@@ -2,7 +2,8 @@
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Stack, Group } from '@mantine/core';
+import { Stack, Group, FileInput, PasswordInput } from '@mantine/core';
+import { IconLock } from '@tabler/icons-react';
 import {
     Modal,
     Input,
@@ -33,6 +34,8 @@ function UserModalContent({
             password: '',
             role: 'User',
             status: 'Active',
+            avatar: null,
+            coverImage: null,
         },
     });
 
@@ -69,6 +72,8 @@ function UserModalContent({
                 password: '',
                 role: matchedRole,
                 status: userToEdit.status || 'Active',
+                avatar: null,
+                coverImage: null,
             });
         } else {
             reset({
@@ -78,16 +83,20 @@ function UserModalContent({
                 password: '',
                 role: 'User',
                 status: 'Active',
+                avatar: null,
+                coverImage: null,
             });
         }
     }, [userToEdit, isOpen, reset]);
 
     const handleFormSubmit = (data) => {
-        const payload = {
+        const id = userToEdit?._id || userToEdit?.id;
+
+        onSave({
             ...data,
-            ...((userToEdit?._id || userToEdit?.id) && { id: userToEdit._id || userToEdit.id }),
-        };
-        onSave(payload);
+            id,
+        });
+
         onClose();
     };
 
@@ -129,10 +138,10 @@ function UserModalContent({
                     />
 
                     {!userToEdit && (
-                        <Input
-                            type="password"
+                        <PasswordInput
                             label="Password"
                             placeholder="Enter secure password"
+                            leftSection={<IconLock size={16} />}
                             error={errors.password?.message}
                             required
                             {...register('password')}
@@ -163,6 +172,36 @@ function UserModalContent({
                                 data={statusOptions}
                                 value={field.value}
                                 onChange={field.onChange}
+                            />
+                        )}
+                    />
+
+                    <Controller
+                        name="avatar"
+                        control={control}
+                        render={({ field }) => (
+                            <FileInput
+                                label="Avatar Image"
+                                placeholder="Upload avatar"
+                                accept="image/png,image/jpeg,image/jpg"
+                                value={field.value}
+                                onChange={field.onChange}
+                                clearable
+                            />
+                        )}
+                    />
+
+                    <Controller
+                        name="coverImage"
+                        control={control}
+                        render={({ field }) => (
+                            <FileInput
+                                label="Cover Image"
+                                placeholder="Upload cover image"
+                                accept="image/png,image/jpeg,image/jpg"
+                                value={field.value}
+                                onChange={field.onChange}
+                                clearable
                             />
                         )}
                     />

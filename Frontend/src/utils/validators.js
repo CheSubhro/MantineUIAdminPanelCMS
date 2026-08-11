@@ -3,9 +3,49 @@ import { z } from 'zod';
 
 // --- 1. User Form Validation ---
 export const userFormSchema = z.object({
-    name: z.string().min(1, 'Name is required.').min(2, 'Name must be at least 2 characters long.'),
-    email: z.string().min(1, 'Email is required.').email('Invalid email address format.'),
-    role: z.string().min(1, 'Role is required.'),
+    name: z
+        .string()
+        .min(1, 'Name is required.')
+        .min(2, 'Name must be at least 2 characters long.'),
+
+    username: z
+        .string()
+        .min(1, 'Username is required.')
+        .min(3, 'Username must be at least 3 characters long.')
+        .regex(
+            /^[a-zA-Z0-9_]+$/,
+            'Username can only contain letters, numbers, and underscores.'
+        ),
+
+    email: z
+        .string()
+        .min(1, 'Email is required.')
+        .email('Invalid email address format.'),
+
+    password: z
+        .string()
+        .optional()
+        .refine(
+            (value) =>
+                !value ||
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(value),
+            {
+                message:
+                    'Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.',
+            }
+        ),
+
+    role: z
+        .string()
+        .min(1, 'Role is required.'),
+
+    status: z
+        .string()
+        .min(1, 'Status is required.'),
+
+    avatar: z.any().nullable().optional(),
+
+    coverImage: z.any().nullable().optional(),
 });
 
 // --- 2. Category Form Validation ---
