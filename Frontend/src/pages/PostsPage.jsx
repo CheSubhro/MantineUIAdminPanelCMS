@@ -8,6 +8,7 @@ import { ErrorBoundary, CustomSelect } from '../components/common';
 function PostsContent() {
     const {
         posts,
+        categories = [],
         searchQuery,
         setSearchQuery,
         statusFilter,
@@ -52,6 +53,7 @@ function PostsContent() {
             {/* Posts Table Component */}
             <PostsTable
                 posts={posts}
+                categories={categories}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 onAddClick={() => handleOpenModal(null)}
@@ -66,6 +68,7 @@ function PostsContent() {
                 onClose={handleCloseModal}
                 onSave={handleSavePost}
                 postToEdit={postToEdit}
+                categories={categories}
             />
         </Stack>
     );

@@ -37,7 +37,7 @@ function PostModalContent({
             slug: '',
             excerpt: '',
             content: '',
-            category: 'Technology',
+            category: '',
             author: 'Subhro Mondal',
             image: null,
             existingImage: '',
@@ -55,7 +55,7 @@ function PostModalContent({
         content: '',
         onUpdate: ({ editor }) => {
             const html = editor.getHTML();
-            setValue('content', html, { shouldValidate: true });
+            setValue('content', html, { shouldValidate: true, shouldDirty: true, });
         },
         editorProps: {
             attributes: {
@@ -64,28 +64,33 @@ function PostModalContent({
         },
     });
 
-    const categoryOptions = categories.length > 0
-        ? categories.map(cat => ({ value: cat.name, label: cat.name }))
-        : [
-            { value: 'Technology', label: 'Technology' },
-            { value: 'Lifestyle', label: 'Lifestyle' },
-            { value: 'Travel', label: 'Travel' },
-        ];
+    // Dynamic Category Options mapping from categories prop
+    const categoryOptions = categories && categories.length > 0
+        ? categories.map(cat => ({
+            value: cat.name,
+            label: cat.name
+        }))
+        : [];
 
     const statusOptions = [
         { value: 'Published', label: 'Published' },
         { value: 'Draft', label: 'Draft' },
     ];
 
+    // Fixed useEffect to prevent infinite loops and size change errors
     useEffect(() => {
+        if (!isOpen) return;
+
+        const defaultCategory = categoryOptions.length > 0 ? categoryOptions[0].value : '';
+
         if (postToEdit) {
             reset({
-                id: postToEdit.id,
+                id: postToEdit._id || postToEdit.id,
                 title: postToEdit.title || '',
                 slug: postToEdit.slug || '',
                 excerpt: postToEdit.excerpt || '',
                 content: postToEdit.content || '',
-                category: postToEdit.category || 'Technology',
+                category: postToEdit.category || defaultCategory,
                 author: postToEdit.author || 'Subhro Mondal',
                 image: null,
                 existingImage: postToEdit.image || '',
@@ -100,7 +105,7 @@ function PostModalContent({
                 slug: '',
                 excerpt: '',
                 content: '',
-                category: 'Technology',
+                category: defaultCategory,
                 author: 'Subhro Mondal',
                 image: null,
                 existingImage: '',
@@ -110,7 +115,7 @@ function PostModalContent({
                 editor.commands.setContent('');
             }
         }
-    }, [postToEdit, isOpen, editor, reset]);
+    }, [isOpen, postToEdit?._id]);
 
     // Auto-generate slug from title if creating a new post
     useEffect(() => {
@@ -132,12 +137,16 @@ function PostModalContent({
     };
 
     const handleFormSubmit = (data) => {
+        const content = editor?.getHTML() || '';
+
         const payload = {
             ...data,
-            image: data.image ? URL.createObjectURL(data.image) : data.existingImage
+            content,
+            image: data.image || null,
+            id: postToEdit?._id || postToEdit?.id,
         };
+
         onSave(payload);
-        onClose();
     };
 
     return (
@@ -176,6 +185,7 @@ function PostModalContent({
                                     data={categoryOptions}
                                     value={field.value}
                                     onChange={field.onChange}
+                                    error={errors.category?.message}
                                 />
                             )}
                         />
@@ -190,6 +200,7 @@ function PostModalContent({
                                     data={statusOptions}
                                     value={field.value}
                                     onChange={field.onChange}
+                                    error={errors.status?.message}
                                 />
                             )}
                         />

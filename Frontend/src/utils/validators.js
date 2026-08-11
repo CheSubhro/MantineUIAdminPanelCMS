@@ -81,10 +81,51 @@ export const categoryFormSchema = z.object({
 
 // --- 3. Post Form Validation ---
 export const postFormSchema = z.object({
-    title: z.string().min(1, 'Post title is required').min(3, 'Post title must be at least 3 characters long'),
-    slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must be lowercase and contain only letters, numbers, and hyphens'),
-    author: z.string().min(1, 'Author name is required'),
-    excerpt: z.string().max(300, 'Excerpt cannot exceed 300 characters').optional().or(z.literal('')),
+    title: z
+        .string()
+        .min(1, 'Post title is required')
+        .min(3, 'Post title must be at least 3 characters long'),
+
+    slug: z
+        .string()
+        .min(1, 'Slug is required')
+        .regex(
+            /^[a-z0-9-]+$/,
+            'Slug must be lowercase and contain only letters, numbers, and hyphens'
+        ),
+
+    author: z
+        .string()
+        .min(1, 'Author name is required'),
+
+    excerpt: z
+        .string()
+        .max(300, 'Excerpt cannot exceed 300 characters')
+        .optional()
+        .or(z.literal('')),
+
+    content: z
+        .string()
+        .optional()
+        .or(z.literal('')),
+
+    category: z
+        .string()
+        .min(1, 'Category is required'),
+
+    status: z
+        .string()
+        .min(1, 'Status is required'),
+
+    image: z
+        .any()
+        .nullable()
+        .optional(),
+
+    existingImage: z
+        .string()
+        .optional()
+        .or(z.literal('')),
 });
 
 // --- 4. Page Form Validation ---

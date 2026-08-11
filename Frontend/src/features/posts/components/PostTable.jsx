@@ -31,7 +31,7 @@ function PostsTableContent({
     const { user } = useAuth();
     const userRole = user?.role || 'contributor';
     const canPerformDelete = PERMISSIONS.canDelete(userRole);
-    const canManagePosts = PERMISSIONS.canPublish(userRole); 
+    const canManagePosts = PERMISSIONS.canPublish(userRole);
 
     const [deleteId, setDeleteId] = useState(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -49,7 +49,7 @@ function PostsTableContent({
 
     const handleSelectAll = (event) => {
         if (event.currentTarget.checked) {
-            const allIds = posts.map((post) => post.id);
+            const allIds = posts.map((post) => post.id || post._id);
             setSelectedIds(allIds);
         } else {
             setSelectedIds([]);
@@ -97,15 +97,18 @@ function PostsTableContent({
         return words.slice(0, 4).join(' ') + '...';
     };
 
-    const rows = paginatedPosts.map((post) => {
-        const isSelected = selectedIds.includes(post.id);
+    const rows = paginatedPosts.map((post, index) => {
+        const postId = post.id || post._id;
+        const isSelected = selectedIds.includes(postId);
+        const rowKey = postId ?? index;
+
         return (
-            <Table.Tr key={post.id} bg={isSelected ? 'var(--mantine-color-default-hover)' : undefined}>
+            <Table.Tr key={rowKey} bg={isSelected ? 'var(--mantine-color-default-hover)' : undefined}>
                 {canPerformDelete && (
                     <Table.Td>
                         <Checkbox
                             checked={isSelected}
-                            onChange={() => handleSelectOne(post.id)}
+                            onChange={() => handleSelectOne(postId)}
                             aria-label="Select row"
                         />
                     </Table.Td>
@@ -156,7 +159,7 @@ function PostsTableContent({
                                 <ActionIcon
                                     variant="subtle"
                                     color="red"
-                                    onClick={() => handleDeleteConfirmClick(post.id)}
+                                    onClick={() => handleDeleteConfirmClick(postId)}
                                 >
                                     <IconTrash size={18} />
                                 </ActionIcon>
