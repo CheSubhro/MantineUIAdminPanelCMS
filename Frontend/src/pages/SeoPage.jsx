@@ -7,12 +7,11 @@ import SeoPreview from '../features/seo/components/SeoPreview';
 import GlobalSeoSettings from '../features/seo/components/GlobalSeoSettings';
 
 export default function SeoPage() {
-    
-    const { seoData, updateSeoField, seoScore } = useSEO();
+
+    const { seoData, updateSeoField, seoScore, saveSeoSettings, loading } = useSEO();
 
     const handleSave = () => {
-        console.log('Saving SEO Data:', seoData);
-        // Backend API call integration point
+        saveSeoSettings();
     };
 
     const handleGenerateSitemap = () => {
@@ -29,6 +28,7 @@ export default function SeoPage() {
                         seoData={seoData}
                         onChange={updateSeoField}
                         onSave={handleSave}
+                        loading={loading}
                     />
                     <Stack gap="lg">
                         <SeoPreview
