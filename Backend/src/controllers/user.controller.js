@@ -44,19 +44,81 @@ export const getAllUsers = asyncHandler(async (req, res) => {
         );
 });
 
+// Create New User (By Admin)
+export const createUser = asyncHandler(async (req, res) => {
+    const { name, username, email, password, role, status } = req.body;
+
+    if (!name || !username || !email || !password) {
+        throw new ApiError(400, "All required fields (name, username, email, password) must be provided.");
+    }
+
+    const existingUser = await User.findOne({
+        $or: [{ email: email.toLowerCase() }, { username: username.toLowerCase() }]
+    });
+
+    if (existingUser) {
+        throw new ApiError(409, "User with this email or username already exists.");
+    }
+
+    const userData = {
+        name,
+        username,
+        email,
+        password,
+        role: role || "User",
+        status: status || "Active",
+    };
+
+    // Avatar Upload Handler
+    if (req.files && req.files.avatar && req.files.avatar[0]) {
+        const avatarLocalPath = req.files.avatar[0].path.replace(/\\/g, "/");
+        const avatarResponse = await uploadOnCloudinary(avatarLocalPath);
+        if (avatarResponse) {
+            userData.avatar = avatarResponse.secure_url;
+            userData.avatarPublicId = avatarResponse.public_id;
+        }
+    }
+
+    // Cover Image Upload Handler
+    if (req.files && req.files.coverImage && req.files.coverImage[0]) {
+        const coverLocalPath = req.files.coverImage[0].path.replace(/\\/g, "/");
+        const coverResponse = await uploadOnCloudinary(coverLocalPath);
+        if (coverResponse) {
+            userData.coverImage = coverResponse.secure_url;
+            userData.coverImagePublicId = coverResponse.public_id;
+        }
+    }
+
+    const newUser = await User.create(userData);
+    const createdUser = await User.findById(newUser._id).select("-password");
+
+    return res
+        .status(HttpStatus.CREATED || 201)
+        .json(
+            new ApiResponse(
+                HttpStatus.CREATED || 201,
+                createdUser,
+                "User created successfully."
+            )
+        );
+});
+
 // Update User Details (By Admin/ID with Cloudinary Image Replacement)
 export const updateUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const updateData = { ...req.body };
 
-    if (updateData.password) {
+    
+    if (!updateData.password || updateData.password.trim() === "") {
+        delete updateData.password;
+    } else {
         const saltRounds = 10;
         updateData.password = await bcrypt.hash(
             updateData.password,
             saltRounds
         );
     }
-
+    
     const existingUser = await User.findById(id);
     if (!existingUser) {
         throw new ApiError(HttpStatus.NOT_FOUND || 404, "User not found.");

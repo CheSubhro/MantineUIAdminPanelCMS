@@ -2,6 +2,7 @@
 import express from "express";
 import {
     getAllUsers,
+    createUser,
     updateUser,
     deleteUser,
 } from "../controllers/user.controller.js";
@@ -10,8 +11,18 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-// Get all users
-router.route("/").get(verifyJWT, getAllUsers);
+// Get all users & Create a new user
+router
+    .route("/")
+    .get(verifyJWT, getAllUsers)
+    .post(
+        verifyJWT,
+        upload.fields([
+            { name: "avatar", maxCount: 1 },
+            { name: "coverImage", maxCount: 1 },
+        ]),
+        createUser
+    );
 
 // Update a user (with image upload support) & Delete a user by ID
 router

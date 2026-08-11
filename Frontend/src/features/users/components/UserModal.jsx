@@ -36,15 +36,38 @@ function UserModalContent({
         },
     });
 
+    const roleOptions = [
+        { value: 'Admin', label: 'Admin' },
+        { value: 'Manager', label: 'Manager' },
+        { value: 'Moderator', label: 'Moderator' },
+        { value: 'Editor', label: 'Editor' },
+        { value: 'User', label: 'User' },
+        { value: 'Author', label: 'Author' },
+        { value: 'Contributor', label: 'Contributor' },
+        { value: 'Developer', label: 'Developer' },
+        { value: 'Customer_Support', label: 'Customer Support' },
+        { value: 'Seller', label: 'Seller' },
+        { value: 'Rider', label: 'Rider' },
+        { value: 'Accountant', label: 'Accountant' },
+    ];
+
     useEffect(() => {
         if (userToEdit) {
+            let matchedRole = 'User';
+            if (userToEdit.role) {
+                const found = roleOptions.find(
+                    (opt) => opt.value.toLowerCase() === userToEdit.role.toLowerCase()
+                );
+                matchedRole = found ? found.value : userToEdit.role;
+            }
+
             reset({
                 id: userToEdit._id || userToEdit.id,
                 name: userToEdit.name || userToEdit.fullName || '',
                 username: userToEdit.username || '',
                 email: userToEdit.email || '',
-                password: '', 
-                role: userToEdit.role || 'User',
+                password: '',
+                role: matchedRole,
                 status: userToEdit.status || 'Active',
             });
         } else {
@@ -67,22 +90,6 @@ function UserModalContent({
         onSave(payload);
         onClose();
     };
-
-    const roleOptions = [
-        { value: 'Super_Admin', label: 'Super Admin' },
-        { value: 'Admin', label: 'Admin' },
-        { value: 'Manager', label: 'Manager' },
-        { value: 'Moderator', label: 'Moderator' },
-        { value: 'Editor', label: 'Editor' },
-        { value: 'User', label: 'User' },
-        { value: 'Author', label: 'Author' },
-        { value: 'Contributor', label: 'Contributor' },
-        { value: 'Developer', label: 'Developer' },
-        { value: 'Customer_Support', label: 'Customer Support' },
-        { value: 'Seller', label: 'Seller' },
-        { value: 'Rider', label: 'Rider' },
-        { value: 'Accountant', label: 'Accountant' },
-    ];
 
     const statusOptions = [
         { value: 'Active', label: 'Active' },

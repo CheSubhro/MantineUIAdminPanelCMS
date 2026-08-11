@@ -33,10 +33,13 @@ const userSchema = new Schema(
         },
         password: {
             type: String,
-            required: [true, "Password is required"],
+            required: function () {
+                return this.isNew;
+            },
             minlength: [8, "Password must be at least 8 characters long"],
             validate: {
                 validator: function (value) {
+                    if (!this.isModified("password") && !value) return true;
                     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(
                         value
                     );
@@ -66,7 +69,6 @@ const userSchema = new Schema(
         role: {
             type: String,
             enum: [
-                "Super_Admin",
                 "Admin",
                 "Manager",
                 "Moderator",
