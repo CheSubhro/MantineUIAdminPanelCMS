@@ -41,7 +41,7 @@ function PageTableContent({
 
     const handleSelectAll = (event) => {
         if (event.currentTarget.checked) {
-            const allIds = pages.map((page) => page.id);
+            const allIds = pages.map((page) => page._id || page.id);
             setSelectedIds(allIds);
         } else {
             setSelectedIds([]);
@@ -89,14 +89,17 @@ function PageTableContent({
         return words.slice(0, 4).join(' ') + '...';
     };
 
-    const rows = paginatedPages.map((page) => {
-        const isSelected = selectedIds.includes(page.id);
+    const rows = paginatedPages.map((page, index) => {
+        const pageId = page._id || page.id;
+        const isSelected = selectedIds.includes(pageId);
+        const rowKey = pageId ?? index;
+
         return (
-            <Table.Tr key={page.id} bg={isSelected ? 'var(--mantine-color-default-hover)' : undefined}>
+            <Table.Tr key={rowKey} bg={isSelected ? 'var(--mantine-color-default-hover)' : undefined}>
                 <Table.Td>
                     <Checkbox
                         checked={isSelected}
-                        onChange={() => handleSelectOne(page.id)}
+                        onChange={() => handleSelectOne(pageId)}
                         aria-label="Select row"
                     />
                 </Table.Td>
@@ -140,7 +143,7 @@ function PageTableContent({
                             <ActionIcon
                                 variant="subtle"
                                 color="red"
-                                onClick={() => handleDeleteConfirmClick(page.id)}
+                                onClick={() => handleDeleteConfirmClick(pageId)}
                             >
                                 <IconTrash size={18} />
                             </ActionIcon>

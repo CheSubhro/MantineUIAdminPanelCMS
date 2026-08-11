@@ -1,52 +1,10 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { showToast } from '../utils/toast';
+import api from '../services/api';
 
-const INITIAL_PAGES = [
-    {
-        id: '1',
-        title: 'Privacy Policy',
-        slug: 'privacy-policy',
-        author: 'Subhro Mondal',
-        status: 'Published',
-        excerpt: 'Learn how we collect, use, and protect your personal information.',
-        content: 'This is the privacy policy content detailing data handling practices.',
-        updatedAt: '2026-06-15',
-    },
-    {
-        id: '2',
-        title: 'Terms of Service',
-        slug: 'terms-of-service',
-        author: 'Subhro Mondal',
-        status: 'Published',
-        excerpt: 'Read the terms and conditions for using our website and services.',
-        content: 'These are the terms and conditions governing website usage.',
-        updatedAt: '2026-06-16',
-    },
-    {
-        id: '3',
-        title: 'About Us',
-        slug: 'about-us',
-        author: 'Subhro Mondal',
-        status: 'Published',
-        excerpt: 'Discover our mission, vision, and the team behind this platform.',
-        content: 'We are a passionate team dedicated to delivering great content.',
-        updatedAt: '2026-06-18',
-    },
-    {
-        id: '4',
-        title: 'Contact Us',
-        slug: 'contact-us',
-        author: 'Subhro Mondal',
-        status: 'Draft',
-        excerpt: 'Get in touch with us for inquiries, support, or feedback.',
-        content: 'You can reach us via email or our official contact form.',
-        updatedAt: '2026-06-20',
-    },
-];
-
-export function usePages(initialPages = INITIAL_PAGES) {
-    const [pages, setPages] = useState(initialPages);
+export function usePages() {
+    const [pages, setPages] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [loading, setLoading] = useState(false);
@@ -58,13 +16,37 @@ export function usePages(initialPages = INITIAL_PAGES) {
     // Delete confirmation state
     const [pageToDelete, setPageToDelete] = useState(null);
 
+    // Fetch all pages from backend API
+    const fetchPages = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await api.get('/pages');
+            const pagesData = response.data.data || response.data;
+            setPages(Array.isArray(pagesData) ? pagesData : []);
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to fetch pages.';
+            showToast.error('Fetch Failed', errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchPages();
+    }, [fetchPages]);
+
     // Filtered pages based on search query and status filter
     const filteredPages = useMemo(() => {
         return pages.filter((page) => {
+            const title = page.title || '';
+            const slug = page.slug || '';
+            const author = page.author || '';
+            const query = searchQuery.toLowerCase();
+
             const matchesSearch = 
-                page.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                page.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                page.author.toLowerCase().includes(searchQuery.toLowerCase());
+                title.toLowerCase().includes(query) ||
+                slug.toLowerCase().includes(query) ||
+                author.toLowerCase().includes(query);
 
             const matchesStatus = 
                 statusFilter === 'All' || page.status === statusFilter;
@@ -84,55 +66,87 @@ export function usePages(initialPages = INITIAL_PAGES) {
         setIsModalOpen(false);
     };
 
-    // Save Page (Create / Update)
-    const handleSavePage = (pageData) => {
+    // Save Page (Create / Update via Backend API using JSON)
+    const handleSavePage = async (pageData) => {
         setLoading(true);
-        setTimeout(() => {
-            if (pageData.id || pageToEdit?.id) {
-                // Edit existing page
-                const targetId = pageData.id || pageToEdit.id;
+        try {
+            const pageId = pageData._id || pageData.id || pageToEdit?._id || pageToEdit?.id;
+
+            const payload = {
+                title: pageData.title,
+                slug: pageData.slug,
+                author: pageData.author,
+                status: pageData.status,
+                excerpt: pageData.excerpt,
+                content: pageData.content,
+            };
+
+            if (pageId) {
+                // Edit existing page using PATCH / PUT
+                const response = await api.put(`/pages/${pageId}`, payload);
+                const updatedPage = response.data.data || response.data;
+
                 setPages((prev) =>
                     prev.map((page) => 
-                        page.id === targetId 
-                            ? { ...page, ...pageData, id: targetId, updatedAt: new Date().toISOString().split('T')[0] } 
-                            : page
+                        page._id === pageId || page.id === pageId ? updatedPage : page
                     )
                 );
                 showToast.success('Page Updated', 'Website page details updated successfully.');
             } else {
-                // Add new page
-                const newPage = {
-                    ...pageData,
-                    id: Date.now().toString(),
-                    updatedAt: new Date().toISOString().split('T')[0],
-                };
+                // Add new page using POST
+                const response = await api.post('/pages', payload);
+                const newPage = response.data.data || response.data;
+
                 setPages((prev) => [newPage, ...prev]);
                 showToast.success('Page Created', 'New website page added successfully.');
             }
-            setLoading(false);
+
             handleCloseModal();
-        }, 300);
+            fetchPages();
+            return true;
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to save page details.';
+            showToast.error('Operation Failed', errorMessage);
+            return false;
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Delete Page
-    const handleDeletePage = (id) => {
+    const handleDeletePage = async (id) => {
         setLoading(true);
-        setTimeout(() => {
-            setPages((prev) => prev.filter((page) => page.id !== id));
+        try {
+            await api.delete(`/pages/${id}`);
+            setPages((prev) => prev.filter((page) => page._id !== id && page.id !== id));
             setPageToDelete(null);
-            setLoading(false);
             showToast.success('Page Deleted', 'Website page has been removed successfully.');
-        }, 300);
+            return true;
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to delete page.';
+            showToast.error('Action Failed', errorMessage);
+            return false;
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Bulk Delete Pages
-    const handleBulkDeletePages = (ids) => {
+    const handleBulkDeletePages = async (ids) => {
+        if (!ids || ids.length === 0) return;
         setLoading(true);
-        setTimeout(() => {
-            setPages((prev) => prev.filter((page) => !ids.includes(page.id)));
-            setLoading(false);
+        try {
+            await api.delete('/pages/bulk', { data: { ids } });
+            setPages((prev) => prev.filter((page) => !ids.includes(page._id) && !ids.includes(page.id)));
             showToast.success('Pages Deleted', `${ids.length} website pages have been removed successfully.`);
-        }, 300);
+            return true;
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to bulk delete pages.';
+            showToast.error('Action Failed', errorMessage);
+            return false;
+        } finally {
+            setLoading(false);
+        }
     };
 
     return {
@@ -152,5 +166,6 @@ export function usePages(initialPages = INITIAL_PAGES) {
         handleSavePage,
         handleDeletePage,
         handleBulkDeletePages,
+        refetchPages: fetchPages,
     };
 }
