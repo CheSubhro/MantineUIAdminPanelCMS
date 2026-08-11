@@ -18,7 +18,7 @@ export const useAuth = () => {
         
         try {
             const data = new FormData();
-            data.append('name', formData.fullName); 
+            data.append('name', formData.fullName || formData.name); 
             data.append('username', formData.username);
             data.append('email', formData.email);
             data.append('password', formData.password);
@@ -51,7 +51,7 @@ export const useAuth = () => {
         }
     };
 
-    // Login Handler (supports both username or email in a single input)
+    // Login Handler
     const login = async (identifier, password) => {
         setLoading(true);
         setError(null);
@@ -72,7 +72,7 @@ export const useAuth = () => {
             setUser(user);
             setLoading(false);
             showToast.success('Welcome Back', response.data.message || 'Logged in successfully.');
-            useNavigateInstance('/dashboard');
+            navigate('/dashboard'); 
             return true;
 
         } catch (err) {
@@ -84,50 +84,83 @@ export const useAuth = () => {
         }
     };
 
-    // Update Profile Handler
+    // Update Profile Handler (Integrated with PUT /auth/update backend API)
     const updateUserProfile = async (updatedData) => {
         setLoading(true);
+        setError(null);
+
         try {
-            const storedUser = JSON.parse(localStorage.getItem('admin_user')) || {};
-            const newUserData = { ...storedUser, ...updatedData };
-            
-            localStorage.setItem('admin_user', JSON.stringify(newUserData));
-            setUser(newUserData);
+            const data = new FormData();
+            if (updatedData.fullName || updatedData.name) {
+                data.append('name', updatedData.fullName || updatedData.name);
+            }
+            if (updatedData.username) data.append('username', updatedData.username);
+            if (updatedData.email) data.append('email', updatedData.email);
+            if (updatedData.password) data.append('password', updatedData.password);
+
+            if (updatedData.avatar instanceof File) {
+                data.append('avatar', updatedData.avatar);
+            }
+            if (updatedData.coverImage instanceof File) {
+                data.append('coverImage', updatedData.coverImage);
+            }
+
+            const response = await api.put('/auth/update', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            const updatedUser = response.data.data;
+            localStorage.setItem('admin_user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
             setLoading(false);
             showToast.success('Profile Updated', 'Your profile details updated successfully.');
             return true;
+
         } catch (err) {
-            setError('Failed to update profile.');
+            const errorMessage = err.response?.data?.message || 'Failed to update profile.';
+            setError(errorMessage);
             setLoading(false);
-            showToast.error('Update Failed', 'Failed to update profile.');
+            showToast.error('Update Failed', errorMessage);
             throw err;
         }
     };
 
-    // Delete Account Handler
+    // Delete Account Handler (Fixed endpoint to match /auth/delete)
     const deleteAccount = async () => {
         setLoading(true);
         try {
+            await api.delete('/auth/delete'); 
             localStorage.removeItem('admin_user');
+            localStorage.removeItem('token');
             setUser(null);
             setLoading(false);
             showToast.success('Account Deleted', 'Your account has been removed successfully.');
             navigate('/login');
             return true;
         } catch (err) {
-            setError('Failed to delete account.');
+            const errorMessage = err.response?.data?.message || 'Failed to delete account.';
+            setError(errorMessage);
             setLoading(false);
-            showToast.error('Action Failed', 'Failed to delete account.');
+            showToast.error('Action Failed', errorMessage);
             throw err;
         }
     };
 
     // Logout Handler
-    const logout = () => {
-        localStorage.removeItem('admin_user');
-        setUser(null);
-        showToast.success('Logged Out', 'You have been logged out successfully.');
-        navigate('/login');
+    const logout = async () => {
+        try {
+            await api.post('/auth/logout'); 
+        } catch (err) {
+            console.error('Logout API error:', err);
+        } finally {
+            localStorage.removeItem('admin_user');
+            localStorage.removeItem('token');
+            setUser(null);
+            showToast.success('Logged Out', 'You have been logged out successfully.');
+            navigate('/login');
+        }
     };
 
     return {
