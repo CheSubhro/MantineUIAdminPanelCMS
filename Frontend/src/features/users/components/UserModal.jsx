@@ -28,7 +28,9 @@ function UserModalContent({
         resolver: zodResolver(userFormSchema),
         defaultValues: {
             name: '',
+            username: '',
             email: '',
+            password: '',
             role: 'User',
             status: 'Active',
         },
@@ -37,16 +39,20 @@ function UserModalContent({
     useEffect(() => {
         if (userToEdit) {
             reset({
-                id: userToEdit.id,
-                name: userToEdit.name || '',
+                id: userToEdit._id || userToEdit.id,
+                name: userToEdit.name || userToEdit.fullName || '',
+                username: userToEdit.username || '',
                 email: userToEdit.email || '',
+                password: '', 
                 role: userToEdit.role || 'User',
                 status: userToEdit.status || 'Active',
             });
         } else {
             reset({
                 name: '',
+                username: '',
                 email: '',
+                password: '',
                 role: 'User',
                 status: 'Active',
             });
@@ -56,16 +62,26 @@ function UserModalContent({
     const handleFormSubmit = (data) => {
         const payload = {
             ...data,
-            ...(userToEdit?.id && { id: userToEdit.id }),
+            ...((userToEdit?._id || userToEdit?.id) && { id: userToEdit._id || userToEdit.id }),
         };
         onSave(payload);
         onClose();
     };
 
     const roleOptions = [
+        { value: 'Super_Admin', label: 'Super Admin' },
         { value: 'Admin', label: 'Admin' },
         { value: 'Manager', label: 'Manager' },
+        { value: 'Moderator', label: 'Moderator' },
+        { value: 'Editor', label: 'Editor' },
         { value: 'User', label: 'User' },
+        { value: 'Author', label: 'Author' },
+        { value: 'Contributor', label: 'Contributor' },
+        { value: 'Developer', label: 'Developer' },
+        { value: 'Customer_Support', label: 'Customer Support' },
+        { value: 'Seller', label: 'Seller' },
+        { value: 'Rider', label: 'Rider' },
+        { value: 'Accountant', label: 'Accountant' },
     ];
 
     const statusOptions = [
@@ -90,12 +106,31 @@ function UserModalContent({
                     />
 
                     <Input
+                        label="Username"
+                        placeholder="Enter unique username"
+                        error={errors.username?.message}
+                        required
+                        {...register('username')}
+                    />
+
+                    <Input
                         label="Email Address"
                         placeholder="Enter email address"
                         error={errors.email?.message}
                         required
                         {...register('email')}
                     />
+
+                    {!userToEdit && (
+                        <Input
+                            type="password"
+                            label="Password"
+                            placeholder="Enter secure password"
+                            error={errors.password?.message}
+                            required
+                            {...register('password')}
+                        />
+                    )}
 
                     <Controller
                         name="role"
@@ -105,8 +140,8 @@ function UserModalContent({
                                 label="Role"
                                 placeholder="Select role"
                                 data={roleOptions}
-                                value={field.value}
-                                onChange={field.onChange}
+                                value={field.value || 'User'}
+                                onChange={(val) => field.onChange(val)}
                             />
                         )}
                     />

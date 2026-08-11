@@ -48,47 +48,52 @@ function UserTableContent({
         }
     };
 
-    const rows = paginatedUsers.map((user) => (
-        <Table.Tr key={user.id}>
-            <Table.Td>
-                <Text size="sm" fw={500}>{user.name}</Text>
-            </Table.Td>
-            <Table.Td>
-                <Text size="sm" c="dimmed">{user.email}</Text>
-            </Table.Td>
-            <Table.Td>
-                <Badge variant="light" color="blue">{user.role}</Badge>
-            </Table.Td>
-            <Table.Td>
-                <Badge variant="light" size="md">
-                    {user.status}
-                </Badge>
-            </Table.Td>
-            <Table.Td>
-                <Group gap="xs" justify="flex-end">
-                    <Tooltip label="Edit User" position="top">
-                        <ActionIcon
-                            variant="subtle"
-                            color="blue"
-                            onClick={() => onEditClick(user)}
-                        >
-                            <IconEdit size={18} />
-                        </ActionIcon>
-                    </Tooltip>
+    const rows = paginatedUsers.map((user) => {
+        // MongoDB এর _id অথবা সাধারণ id হ্যান্ডেল করার জন্য ইউনিক কি নির্ধারণ
+        const uniqueKey = user._id || user.id;
 
-                    <Tooltip label="Delete User" position="top">
-                        <ActionIcon
-                            variant="subtle"
-                            color="red"
-                            onClick={() => handleDeleteConfirmClick(user.id)}
-                        >
-                            <IconTrash size={18} />
-                        </ActionIcon>
-                    </Tooltip>
-                </Group>
-            </Table.Td>
-        </Table.Tr>
-    ));
+        return (
+            <Table.Tr key={uniqueKey}>
+                <Table.Td>
+                    <Text size="sm" fw={500}>{user.name || user.fullName}</Text>
+                </Table.Td>
+                <Table.Td>
+                    <Text size="sm" c="dimmed">{user.email}</Text>
+                </Table.Td>
+                <Table.Td>
+                    <Badge variant="light" color="blue">{user.role}</Badge>
+                </Table.Td>
+                <Table.Td>
+                    <Badge variant="light" size="md">
+                        {user.status || 'Active'}
+                    </Badge>
+                </Table.Td>
+                <Table.Td>
+                    <Group gap="xs" justify="flex-end">
+                        <Tooltip label="Edit User" position="top">
+                            <ActionIcon
+                                variant="subtle"
+                                color="blue"
+                                onClick={() => onEditClick(user)}
+                            >
+                                <IconEdit size={18} />
+                            </ActionIcon>
+                        </Tooltip>
+
+                        <Tooltip label="Delete User" position="top">
+                            <ActionIcon
+                                variant="subtle"
+                                color="red"
+                                onClick={() => handleDeleteConfirmClick(uniqueKey)}
+                            >
+                                <IconTrash size={18} />
+                            </ActionIcon>
+                        </Tooltip>
+                    </Group>
+                </Table.Td>
+            </Table.Tr>
+        );
+    });
 
     return (
         <Card p="md" radius="md" withBorder>
