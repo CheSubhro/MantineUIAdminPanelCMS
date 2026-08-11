@@ -50,9 +50,33 @@ export const userFormSchema = z.object({
 
 // --- 2. Category Form Validation ---
 export const categoryFormSchema = z.object({
-    name: z.string().min(1, 'Category name is required').min(2, 'Category name must be at least 2 characters long'),
-    slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must be lowercase and contain only letters, numbers, and hyphens'),
-    description: z.string().max(255, 'Description cannot exceed 255 characters').optional().or(z.literal('')),
+    name: z
+        .string()
+        .min(1, 'Category name is required')
+        .min(2, 'Category name must be at least 2 characters long'),
+
+    slug: z
+        .string()
+        .min(1, 'Slug is required')
+        .regex(
+            /^[a-z0-9-]+$/,
+            'Slug must be lowercase and contain only letters, numbers, and hyphens'
+        ),
+
+    description: z
+        .string()
+        .max(255, 'Description cannot exceed 255 characters')
+        .optional()
+        .or(z.literal('')),
+
+    image: z
+        .any()
+        .nullable()
+        .optional(),
+
+    status: z
+        .string()
+        .min(1, 'Status is required'),
 });
 
 // --- 3. Post Form Validation ---

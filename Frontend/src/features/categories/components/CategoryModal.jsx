@@ -2,7 +2,8 @@
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Stack, Group } from '@mantine/core';
+import { Stack, Group, FileInput } from '@mantine/core';
+import { IconPhoto } from '@tabler/icons-react';
 import {
     Modal,
     Input,
@@ -31,7 +32,7 @@ function CategoryModalContent({
             name: '',
             slug: '',
             description: '',
-            image: '',
+            image: null,
             status: 'Active',
         },
     });
@@ -39,11 +40,11 @@ function CategoryModalContent({
     useEffect(() => {
         if (categoryToEdit) {
             reset({
-                id: categoryToEdit.id,
+                id: categoryToEdit._id || categoryToEdit.id,
                 name: categoryToEdit.name || '',
                 slug: categoryToEdit.slug || '',
                 description: categoryToEdit.description || '',
-                image: categoryToEdit.image || '',
+                image: null, 
                 status: categoryToEdit.status || 'Active',
             });
         } else {
@@ -51,7 +52,7 @@ function CategoryModalContent({
                 name: '',
                 slug: '',
                 description: '',
-                image: '',
+                image: null,
                 status: 'Active',
             });
         }
@@ -72,7 +73,11 @@ function CategoryModalContent({
     };
 
     const handleFormSubmit = (data) => {
-        onSave(data);
+        const id = categoryToEdit?._id || categoryToEdit?.id;
+        onSave({
+            ...data,
+            id,
+        });
         onClose();
     };
 
@@ -108,11 +113,21 @@ function CategoryModalContent({
                         {...register('slug')}
                     />
 
-                    <Input
-                        label="Image URL"
-                        placeholder="https://example.com/image.jpg"
-                        error={errors.image?.message}
-                        {...register('image')}
+                    <Controller
+                        name="image"
+                        control={control}
+                        render={({ field }) => (
+                            <FileInput
+                                label="Category Image"
+                                placeholder="Upload category image"
+                                leftSection={<IconPhoto size={16} />}
+                                accept="image/png,image/jpeg,image/jpg"
+                                value={field.value}
+                                onChange={field.onChange}
+                                clearable
+                                error={errors.image?.message}
+                            />
+                        )}
                     />
 
                     <Controller

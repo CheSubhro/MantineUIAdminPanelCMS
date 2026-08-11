@@ -1,40 +1,11 @@
 
-import { useState, useMemo } from 'react';
-import { showToast } from '../utils/toast'; 
-
-const INITIAL_CATEGORIES = [
-    {
-        id: '1',
-        name: 'Technology',
-        slug: 'technology',
-        description: 'Latest tech news, gadgets, and software development trends.',
-        postCount: 12,
-        image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100',
-        status: 'Active'
-    },
-    {
-        id: '2',
-        name: 'Lifestyle',
-        slug: 'lifestyle',
-        description: 'Tips for daily living, health, productivity, and wellness.',
-        postCount: 8,
-        image: 'https://images.unsplash.com/photo-1511556532299-8f662fc26c06?w=100',
-        status: 'Active'
-    },
-    {
-        id: '3',
-        name: 'Travel',
-        slug: 'travel',
-        description: 'Explore breathtaking destinations and travel guides.',
-        postCount: 5,
-        image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=100',
-        status: 'Inactive'
-    }
-];
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { showToast } from '../utils/toast';
+import api from '../services/api';
 
 export function useCategories() {
-    
-    const [categories, setCategories] = useState(INITIAL_CATEGORIES);
+
+    const [categories, setCategories] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [loading, setLoading] = useState(false);
@@ -46,12 +17,35 @@ export function useCategories() {
     // Delete confirmation state
     const [categoryToDelete, setCategoryToDelete] = useState(null);
 
+    // Fetch all categories from backend API
+    const fetchCategories = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await api.get('/categories');
+            const categoriesData = response.data.data || response.data;
+            setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to fetch categories.';
+            showToast.error('Fetch Failed', errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchCategories();
+    }, [fetchCategories]);
+
     // Filtered categories based on search query and status
     const filteredCategories = useMemo(() => {
         return categories.filter((category) => {
+            const name = category.name || '';
+            const slug = category.slug || '';
+            const query = searchQuery.toLowerCase();
+
             const matchesSearch = 
-                category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                category.slug.toLowerCase().includes(searchQuery.toLowerCase());
+                name.toLowerCase().includes(query) ||
+                slug.toLowerCase().includes(query);
             
             const matchesStatus = statusFilter === 'All' || category.status === statusFilter;
 
@@ -70,33 +64,66 @@ export function useCategories() {
         setIsModalOpen(false);
     };
 
-    // Save Category (Create / Update)
-    const handleSaveCategory = (categoryData) => {
-        if (categoryData.id || categoryToEdit?.id) {
-            // Edit existing category
-            const targetId = categoryData.id || categoryToEdit.id;
-            setCategories((prev) =>
-                prev.map((cat) => (cat.id === targetId ? { ...cat, ...categoryData, id: targetId } : cat))
-            );
-            showToast.success('Category Updated', 'Category details updated successfully.');
-        } else {
-            // Add new category
-            const newCategory = {
-                ...categoryData,
-                id: Date.now().toString(),
-                postCount: 0,
-            };
-            setCategories((prev) => [newCategory, ...prev]);
-            showToast.success('Category Created', 'New category added successfully.');
+    // Save Category (Create / Update via Backend API with Multipart Form Data)
+    const handleSaveCategory = async (categoryData) => {
+        
+        setLoading(true);
+        try {
+            const categoryId = categoryData._id || categoryData.id || categoryToEdit?._id || categoryToEdit?.id;
+            const formData = new FormData();
+
+            if (categoryData.name) formData.append('name', categoryData.name);
+            if (categoryData.slug) formData.append('slug', categoryData.slug);
+            if (categoryData.description) formData.append('description', categoryData.description);
+            if (categoryData.status) formData.append('status', categoryData.status);
+
+            if (categoryData.image instanceof File) {
+                formData.append('image', categoryData.image);
+            }
+
+            if (categoryId) {
+                // Edit / Update existing category using PATCH
+                const response = await api.patch(`/categories/${categoryId}`, formData);
+                const updatedCategory = response.data.data || response.data;
+
+                setCategories((prev) =>
+                    prev.map((cat) => (cat._id === categoryId || cat.id === categoryId ? updatedCategory : cat))
+                );
+                showToast.success('Category Updated', 'Category details updated successfully.');
+            } else {
+                // Add new category using POST
+                const response = await api.post('/categories', formData);
+                const newCategory = response.data.data || response.data;
+
+                setCategories((prev) => [newCategory, ...prev]);
+                showToast.success('Category Created', 'New category added successfully.');
+            }
+
+            handleCloseModal();
+            fetchCategories();
+            return true;
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to save category details.';
+            showToast.error('Operation Failed', errorMessage);
+            return false;
+        } finally {
+            setLoading(false);
         }
-        handleCloseModal();
     };
 
     // Delete Category
-    const handleDeleteCategory = (id) => {
-        setCategories((prev) => prev.filter((cat) => cat.id !== id));
-        setCategoryToDelete(null);
-        showToast.success('Category Deleted', 'Category has been removed successfully.');
+    const handleDeleteCategory = async (id) => {
+        try {
+            await api.delete(`/categories/${id}`);
+            setCategories((prev) => prev.filter((cat) => cat._id !== id && cat.id !== id));
+            setCategoryToDelete(null);
+            showToast.success('Category Deleted', 'Category has been removed successfully.');
+            return true;
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to delete category.';
+            showToast.error('Action Failed', errorMessage);
+            return false;
+        }
     };
 
     return {
@@ -115,5 +142,6 @@ export function useCategories() {
         handleCloseModal,
         handleSaveCategory,
         handleDeleteCategory,
+        refetchCategories: fetchCategories,
     };
 }

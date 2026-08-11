@@ -22,7 +22,7 @@ function CategoryTableContent({
     onAddClick,
     onEditClick,
     onDeleteClick,
-    onBulkDeleteClick, 
+    onBulkDeleteClick,
     loading = false
 }) {
     const [deleteId, setDeleteId] = useState(null);
@@ -41,7 +41,7 @@ function CategoryTableContent({
 
     const handleSelectAll = (event) => {
         if (event.currentTarget.checked) {
-            const allIds = categories.map((cat) => cat.id);
+            const allIds = categories.map((cat) => cat._id || cat.id);
             setSelectedIds(allIds);
         } else {
             setSelectedIds([]);
@@ -89,14 +89,17 @@ function CategoryTableContent({
         return words.slice(0, 3).join(' ') + '...';
     };
 
-    const rows = paginatedCategories.map((category) => {
-        const isSelected = selectedIds.includes(category.id);
+    const rows = paginatedCategories.map((category, index) => {
+        const catId = category._id || category.id;
+        const isSelected = selectedIds.includes(catId);
+        const rowKey = catId ?? index;
+
         return (
-            <Table.Tr key={category.id} bg={isSelected ? 'var(--mantine-color-default-hover)' : undefined}>
+            <Table.Tr key={rowKey} bg={isSelected ? 'var(--mantine-color-default-hover)' : undefined}>
                 <Table.Td>
                     <Checkbox
                         checked={isSelected}
-                        onChange={() => handleSelectOne(category.id)}
+                        onChange={() => handleSelectOne(catId)}
                         aria-label="Select row"
                     />
                 </Table.Td>
@@ -118,7 +121,7 @@ function CategoryTableContent({
                 </Table.Td>
                 <Table.Td>
                     <Badge variant="light">
-                        {category.postCount} Posts
+                        {category.postCount || 0} Posts
                     </Badge>
                 </Table.Td>
                 <Table.Td>
@@ -142,7 +145,7 @@ function CategoryTableContent({
                             <ActionIcon
                                 variant="subtle"
                                 color="red"
-                                onClick={() => handleDeleteConfirmClick(category.id)}
+                                onClick={() => handleDeleteConfirmClick(catId)}
                             >
                                 <IconTrash size={18} />
                             </ActionIcon>
@@ -155,7 +158,6 @@ function CategoryTableContent({
 
     return (
         <Card p="md" radius="md" withBorder>
-            {/* Top Bar: Search, Add Button, and Bulk Delete Button */}
             <Group justify="space-between" mb="md" wrap="wrap">
                 <Group>
                     <Input
@@ -186,7 +188,6 @@ function CategoryTableContent({
                 </Button>
             </Group>
 
-            {/* Content / Table Area */}
             {loading ? (
                 <Group justify="center" py="xl">
                     <Spinner size="lg" />
@@ -218,7 +219,6 @@ function CategoryTableContent({
                         </Table>
                     </Table.ScrollContainer>
 
-                    {/* Pagination Component */}
                     {categories.length > itemsPerPage && (
                         <Group justify="flex-end" mt="md">
                             <Pagination
@@ -240,7 +240,6 @@ function CategoryTableContent({
                 />
             )}
 
-            {/* Confirm Single Delete Modal */}
             <ConfirmModal
                 isOpen={isConfirmOpen}
                 onClose={() => setIsConfirmOpen(false)}
@@ -251,7 +250,6 @@ function CategoryTableContent({
                 confirmColor="red"
             />
 
-            {/* Confirm Bulk Delete Modal */}
             <ConfirmModal
                 isOpen={isBulkConfirmOpen}
                 onClose={() => setIsBulkConfirmOpen(false)}
