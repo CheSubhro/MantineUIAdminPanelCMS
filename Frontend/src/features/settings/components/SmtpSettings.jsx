@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, Input } from '../../../components/common';
 
-export function SmtpSettings({ settings, updateSetting }) {
+export function SmtpSettings({ register }) {
 
     return (
         <Card className="p-6 mb-6">
@@ -18,10 +18,7 @@ export function SmtpSettings({ settings, updateSetting }) {
 
                     <Input
                         type="text"
-                        value={settings.smtpHost}
-                        onChange={(e) =>
-                            updateSetting('smtpHost', e.target.value)
-                        }
+                        {...register('smtpHost')}
                         placeholder="smtp.example.com"
                     />
                 </div>
@@ -33,10 +30,7 @@ export function SmtpSettings({ settings, updateSetting }) {
 
                     <Input
                         type="text"
-                        value={settings.smtpPort}
-                        onChange={(e) =>
-                            updateSetting('smtpPort', e.target.value)
-                        }
+                        {...register('smtpPort')}
                         placeholder="587"
                     />
                 </div>
@@ -48,10 +42,7 @@ export function SmtpSettings({ settings, updateSetting }) {
 
                     <Input
                         type="text"
-                        value={settings.smtpUser}
-                        onChange={(e) =>
-                            updateSetting('smtpUser', e.target.value)
-                        }
+                        {...register('smtpUser')}
                         placeholder="Username"
                     />
                 </div>
@@ -64,10 +55,7 @@ export function SmtpSettings({ settings, updateSetting }) {
                     <div className="relative">
                         <Input
                             type="password"
-                            value={settings.smtpPass}
-                            onChange={(e) =>
-                                updateSetting('smtpPass', e.target.value)
-                            }
+                            {...register('smtpPass')}
                             placeholder="••••••••"
                             className="pr-12"
                         />

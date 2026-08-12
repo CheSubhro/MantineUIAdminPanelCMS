@@ -1,73 +1,96 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { showToast } from '../utils/toast';
+import api from '../services/api';
 
-export function useSettings(initialSettings = {}) {
+export function useSettings() {
     
     const [settings, setSettings] = useState({
-        // General
-        siteName: initialSettings.siteName || 'My Application',
-        tagline: initialSettings.tagline || 'Building amazing apps with React & Vite',
-        timezone: initialSettings.timezone || 'UTC (Coordinated Universal Time)',
-        language: initialSettings.language || 'en',
-        
-        // Notifications
-        systemEmailAlerts: initialSettings.systemEmailAlerts ?? true,
-        pushNotifications: initialSettings.pushNotifications ?? true,
-        smsAlerts: initialSettings.smsAlerts ?? false,
-
-        // Security & Access Control
-        twoFactorAuth: initialSettings.twoFactorAuth ?? true,
-        passwordExpireDays: initialSettings.passwordExpireDays || '90',
-        sessionTimeout: initialSettings.sessionTimeout || '30',
-
-        // Email / SMTP
-        smtpHost: initialSettings.smtpHost || 'smtp.mailtrap.io',
-        smtpPort: initialSettings.smtpPort || '587',
-        smtpUser: initialSettings.smtpUser || '',
-        smtpPass: initialSettings.smtpPass || '',
-
-        // API & Integrations
-        googleAnalyticsId: initialSettings.googleAnalyticsId || 'UA-XXXXXXXXX-X',
-        paymentGatewayKey: initialSettings.paymentGatewayKey || '',
-        externalApiKey: initialSettings.externalApiKey || '',
-
-        // Backup & Maintenance
-        backupFrequency: initialSettings.backupFrequency || 'daily',
-        maintenanceMode: initialSettings.maintenanceMode ?? false,
-
-        ...initialSettings,
+        siteName: 'My Application',
+        tagline: 'Building amazing apps with React & Vite',
+        timezone: 'UTC (Coordinated Universal Time)',
+        language: 'en',
+        systemEmailAlerts: true,
+        pushNotifications: true,
+        smsAlerts: false,
+        twoFactorAuth: true,
+        passwordExpireDays: '90',
+        sessionTimeout: '30',
+        smtpHost: 'smtp.mailtrap.io',
+        smtpPort: '587',
+        smtpUser: '',
+        smtpPass: '',
+        googleAnalyticsId: 'UA-XXXXXXXXX-X',
+        paymentGatewayKey: '',
+        externalApiKey: '',
+        backupFrequency: 'daily',
+        maintenanceMode: false,
     });
 
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
-    const updateSetting = useCallback((key, value) => {
-        setSettings((prev) => ({
-            ...prev,
-            [key]: value,
-        }));
+    // Fetch settings from backend API
+    const fetchSettings = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await api.get('/settings');
+            const data = response.data.data || response.data;
+            if (data) {
+                setSettings((prev) => ({
+                    ...prev,
+                    ...data,
+                }));
+            }
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to fetch system settings.';
+            showToast.error('Fetch Failed', errorMessage);
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
-    const saveSettings = useCallback((onSuccess) => {
+    useEffect(() => {
+        fetchSettings();
+    }, [fetchSettings]);
+
+    // Save settings via PUT API
+    const saveSettings = useCallback(async (formData, onSuccess) => {
         setLoading(true);
         setSuccessMessage('');
         
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            const response = await api.put('/settings', formData);
+            const updatedData = response.data.data || response.data;
+            
+            if (updatedData) {
+                setSettings((prev) => ({
+                    ...prev,
+                    ...updatedData,
+                }));
+            }
+
             setSuccessMessage('Settings updated successfully!');
             showToast.success('Settings Saved', 'System configurations updated successfully.');
-            if (onSuccess) onSuccess();
             
+            if (onSuccess) onSuccess();
+
             setTimeout(() => setSuccessMessage(''), 3000);
-        }, 500);
+            return true;
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to update system settings.';
+            showToast.error('Update Failed', errorMessage);
+            return false;
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
     return {
         settings,
-        updateSetting,
         saveSettings,
         loading,
         successMessage,
+        refetchSettings: fetchSettings,
     };
 }

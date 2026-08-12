@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, Input } from '../../../components/common';
 
-export function ApiIntegrations({ settings, updateSetting }) {
+export function ApiIntegrations({ register }) {
 
     return (
         <Card className="p-6 mb-6">
@@ -12,8 +12,7 @@ export function ApiIntegrations({ settings, updateSetting }) {
                     <label className="block mb-1.5 text-sm font-semibold text-gray-700">Google Analytics Tracking ID</label>
                     <Input
                         type="text"
-                        value={settings.googleAnalyticsId}
-                        onChange={(e) => updateSetting('googleAnalyticsId', e.target.value)}
+                        {...register('googleAnalyticsId')}
                         placeholder="UA-XXXXXXXXX-X"
                     />
                 </div>
@@ -21,8 +20,7 @@ export function ApiIntegrations({ settings, updateSetting }) {
                     <label className="block mb-1.5 text-sm font-semibold text-gray-700">Payment Gateway API Key</label>
                     <Input
                         type="text"
-                        value={settings.paymentGatewayKey}
-                        onChange={(e) => updateSetting('paymentGatewayKey', e.target.value)}
+                        {...register('paymentGatewayKey')}
                         placeholder="pk_test_..."
                     />
                 </div>
@@ -30,8 +28,7 @@ export function ApiIntegrations({ settings, updateSetting }) {
                     <label className="block mb-1.5 text-sm font-semibold text-gray-700">External API Key</label>
                     <Input
                         type="text"
-                        value={settings.externalApiKey}
-                        onChange={(e) => updateSetting('externalApiKey', e.target.value)}
+                        {...register('externalApiKey')}
                         placeholder="API Key"
                     />
                 </div>

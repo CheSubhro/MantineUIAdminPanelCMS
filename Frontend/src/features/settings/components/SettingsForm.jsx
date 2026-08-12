@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../../components/common';
@@ -11,17 +11,25 @@ import { ApiIntegrations } from './ApiIntegrations';
 import { BackupMaintenance } from './BackupMaintenance';
 import { settingsFormSchema } from '../../../utils/validators';
 
-export function SettingsForm({ settings, onSave, loading, successMessage }) {
+export function SettingsForm({ settings = {}, onSave, loading, successMessage }) {
 
     const {
         register,
         control,
         handleSubmit,
+        reset,
         formState: { errors },
     } = useForm({
         resolver: zodResolver(settingsFormSchema),
-        defaultValues: settings || {},
+        defaultValues: settings,
     });
+
+    // Sync form values when asynchronous settings data arrives from backend
+    useEffect(() => {
+        if (settings && Object.keys(settings).length > 0) {
+            reset(settings);
+        }
+    }, [settings, reset]);
 
     const handleFormSubmit = (data) => {
         if (onSave) {

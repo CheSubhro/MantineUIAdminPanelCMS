@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Card, Input, CustomSelect } from '../../../components/common';
+import { Controller } from 'react-hook-form';
 
-export function GeneralSettings({ settings, updateSetting }) {
+export function GeneralSettings({ register, control, errors }) {
 
     const timezoneOptions = [
         { label: 'UTC (Coordinated Universal Time)', value: 'UTC (Coordinated Universal Time)' },
@@ -25,34 +26,47 @@ export function GeneralSettings({ settings, updateSetting }) {
                     <label className="block mb-1.5 text-sm font-semibold text-gray-700">Site Name</label>
                     <Input
                         type="text"
-                        value={settings.siteName}
-                        onChange={(e) => updateSetting('siteName', e.target.value)}
+                        {...register('siteName')}
                         placeholder="Enter site name"
                     />
+                    {errors?.siteName && (
+                        <p className="text-red-500 text-xs mt-1">{errors.siteName.message}</p>
+                    )}
                 </div>
                 <div>
                     <label className="block mb-1.5 text-sm font-semibold text-gray-700">Tagline</label>
                     <Input
                         type="text"
-                        value={settings.tagline}
-                        onChange={(e) => updateSetting('tagline', e.target.value)}
+                        {...register('tagline')}
                         placeholder="Enter tagline"
                     />
                 </div>
                 <div>
                     <label className="block mb-1.5 text-sm font-semibold text-gray-700">Timezone</label>
-                    <CustomSelect
-                        options={timezoneOptions}
-                        value={settings.timezone}
-                        onChange={(value) => updateSetting('timezone', value)}
+                    <Controller
+                        name="timezone"
+                        control={control}
+                        render={({ field }) => (
+                            <CustomSelect
+                                options={timezoneOptions}
+                                value={field.value}
+                                onChange={field.onChange}
+                            />
+                        )}
                     />
                 </div>
                 <div>
                     <label className="block mb-1.5 text-sm font-semibold text-gray-700">Default Language</label>
-                    <CustomSelect
-                        options={languageOptions}
-                        value={settings.language}
-                        onChange={(value) => updateSetting('language', value)}
+                    <Controller
+                        name="language"
+                        control={control}
+                        render={({ field }) => (
+                            <CustomSelect
+                                options={languageOptions}
+                                value={field.value}
+                                onChange={field.onChange}
+                            />
+                        )}
                     />
                 </div>
             </div>
