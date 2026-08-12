@@ -25,7 +25,8 @@ export default function Sidebar({ onLogout }) {
     const location = useLocation();
     const { logout, user } = useAuth();
 
-    const userRole = user?.role || 'super_admin';
+    // Normalize role to lowercase for permissions matching
+    const userRole = user?.role ? user.role.toLowerCase() : 'admin';
 
     const menuItems = [
         { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: IconDashboard },
@@ -33,7 +34,7 @@ export default function Sidebar({ onLogout }) {
         { id: 'categories', label: 'Categories', path: '/categories', icon: IconCategory },
         { id: 'posts', label: 'Posts', path: '/posts', icon: IconArticle },
         { id: 'pages', label: 'Pages', path: '/pages', icon: IconBook },
-        { id: 'seo', label: 'SEO Management', path: '/seo', icon: IconWorld }, 
+        { id: 'seo', label: 'SEO Management', path: '/seo', icon: IconWorld },
         { id: 'comments', label: 'Comments', path: '/comments', icon: IconMessageCircle },
         { id: 'media', label: 'Media Manager', path: '/media', icon: IconPhoto },
         { id: 'analytics', label: 'Analytics', path: '/analytics', icon: IconChartBar },
