@@ -42,22 +42,11 @@ export const uploadMedia = asyncHandler(async (req, res) => {
             "Failed to upload media to Cloudinary due to timeout or network issue."
         );
     }
-
-    const uploaderId = req.user?._id || req.body.uploadedBy;
-
-    if (!uploaderId) {
-        throw new ApiError(
-            HttpStatus.UNAUTHORIZED || 401,
-            "Unauthorized request. Uploader reference is missing."
-        );
-    }
-
     const newMedia = await Media.create({
         name: req.file.originalname,
         url: cloudinaryResponse.secure_url,
         size: req.file.size,
         publicId: cloudinaryResponse.public_id,
-        uploadedBy: uploaderId,
     });
 
     return res

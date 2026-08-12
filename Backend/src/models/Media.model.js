@@ -20,11 +20,6 @@ const mediaSchema = new mongoose.Schema(
             type: String,
             required: [true, "Cloudinary public ID is required"],
         },
-        uploadedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: [true, "Uploader reference is required"],
-        },
     },
     {
         timestamps: true,

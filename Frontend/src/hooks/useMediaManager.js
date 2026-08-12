@@ -1,64 +1,98 @@
 
-import { useState, useMemo } from 'react';
-import { notifications } from '@mantine/notifications';
-
-const INITIAL_MEDIA_FILES = [
-    { id: 1, name: 'banner-image-1.jpg', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', size: '1.2 MB' },
-    { id: 2, name: 'dashboard-preview.png', url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=400', size: '850 KB' },
-    { id: 3, name: 'author-profile.jpg', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400', size: '450 KB' },
-];
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { showToast } from '../utils/toast';
+import api from '../services/api';
 
 export function useMediaManager() {
     
-    const [mediaFiles, setMediaFiles] = useState(INITIAL_MEDIA_FILES);
+    const [mediaFiles, setMediaFiles] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Modal state (similar to isModalOpen)
+    // Modal state (opened/closed)
     const [opened, setOpened] = useState(false);
 
     // Delete confirmation state
     const [mediaToDelete, setMediaToDelete] = useState(null);
 
+    // Fetch all media files from backend API
+    const fetchMediaFiles = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await api.get('/media');
+            const mediaData = response.data.data || response.data;
+            setMediaFiles(Array.isArray(mediaData) ? mediaData : []);
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to fetch media files.';
+            showToast.error('Fetch Failed', errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchMediaFiles();
+    }, [fetchMediaFiles]);
+
     // Filtered media files based on search query using useMemo
     const filteredMediaFiles = useMemo(() => {
-        return mediaFiles.filter((file) => 
-            file.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+        return mediaFiles.filter((file) => {
+            const fileName = file.name || file.filename || '';
+            return fileName.toLowerCase().includes(searchQuery.toLowerCase());
+        });
     }, [mediaFiles, searchQuery]);
 
     const handleCopyUrl = (url) => {
+        if (!url) return;
         navigator.clipboard.writeText(url);
-        notifications.show({
-            title: 'Success',
-            message: 'Image URL copied to clipboard!',
-            color: 'green',
-        });
+        showToast.success('URL Copied', 'Image URL copied to clipboard!');
     };
 
-    const handleDeleteFunction = (id) => {
-        setMediaFiles((prev) => prev.filter((file) => file.id !== id));
-        setMediaToDelete(null);
-        notifications.show({
-            title: 'Deleted',
-            message: 'Media file deleted successfully!',
-            color: 'red',
-        });
+    // Helper to get correct ID (_id or id)
+    const getId = (file) => file._id || file.id;
+
+    // Delete Media File via Backend API
+    const handleDeleteFunction = async (id) => {
+        try {
+            await api.delete(`/media/${id}`);
+            setMediaFiles((prev) => prev.filter((file) => getId(file) !== id));
+            setMediaToDelete(null);
+            showToast.success('Deleted', 'Media file deleted successfully!');
+            return true;
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to delete media file.';
+            showToast.error('Action Failed', errorMessage);
+            return false;
+        }
     };
 
-    const handleUpload = (files) => {
-        console.log('Accepted files', files);
+    // Upload Media Files via Backend API using Multipart Form Data
+    const handleUpload = async (files) => {
+        if (!files) return;
         setLoading(true);
-        // Simulate upload logic if needed
-        setTimeout(() => {
-            setLoading(false);
-            setOpened(false);
-            notifications.show({ 
-                title: 'Uploaded', 
-                message: 'Files uploaded successfully!', 
-                color: 'green' 
+        try {
+            const formData = new FormData();
+
+            // Handle single file or multiple files array/FileList
+            const fileList = Array.isArray(files) ? files : [files];
+            fileList.forEach((file) => {
+                formData.append('file', file);
             });
-        }, 500);
+
+            // এখানে আলাদা করে headers দেওয়ার প্রয়োজন নেই, Axios এবং ইন্টারসেপ্টর নিজে থেকেই টোকেন ও বাউন্ডারি হ্যান্ডেল করবে
+            await api.post('/media/upload', formData);
+
+            showToast.success('Uploaded', 'Files uploaded successfully!');
+            setOpened(false);
+            fetchMediaFiles();
+            return true;
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to upload media files.';
+            showToast.error('Upload Failed', errorMessage);
+            return false;
+        } finally {
+            setLoading(false);
+        }
     };
 
     return {
@@ -74,5 +108,6 @@ export function useMediaManager() {
         handleCopyUrl,
         handleDeleteFunction,
         handleUpload,
+        refetchMedia: fetchMediaFiles,
     };
 }

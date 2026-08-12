@@ -6,7 +6,7 @@ export default function MediaGrid({ mediaFiles, onCopyUrl, onDelete }) {
     return (
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing="md">
             {mediaFiles.map((file) => (
-                <Card key={file.id} shadow="sm" padding="xs" radius="md" withBorder bg="var(--mantine-color-dark-6)">
+                <Card key={file._id} shadow="sm" padding="xs" radius="md" withBorder bg="var(--mantine-color-dark-6)">
                     <Card.Section>
                         <Image src={file.url} height={160} alt={file.name} fit="cover" />
                     </Card.Section>
@@ -20,7 +20,7 @@ export default function MediaGrid({ mediaFiles, onCopyUrl, onDelete }) {
                             <ActionIcon variant="subtle" color="blue" onClick={() => onCopyUrl(file.url)} title="Copy URL">
                                 <IconCopy size={16} />
                             </ActionIcon>
-                            <ActionIcon variant="subtle" color="red" onClick={() => onDelete(file.id)} title="Delete">
+                            <ActionIcon variant="subtle" color="red" onClick={() => onDelete(file._id)} title="Delete">
                                 <IconTrash size={16} />
                             </ActionIcon>
                         </Group>
