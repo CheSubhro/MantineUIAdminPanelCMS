@@ -1,6 +1,5 @@
 
 import Post from "../models/Post.model.js";
-import User from "../models/User.model.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import HttpStatus from "../utils/HttpStatus.js";

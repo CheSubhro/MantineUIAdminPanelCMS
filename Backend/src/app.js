@@ -27,6 +27,7 @@ import commentsRouter from "./routes/comment.routes.js";
 import analyticsRouter from "./routes/analytics.routes.js";
 import notificationsRouter from "./routes/notification.routes.js";
 import seoRouter from "./routes/seo.routes.js";
+import reportsRouter from "./routes/report.routes.js"
 
 
 //routes declaration
@@ -40,6 +41,7 @@ app.use("/api/v1/comments", commentsRouter);
 app.use("/api/v1/analytics", analyticsRouter);
 app.use("/api/v1/notifications", notificationsRouter);
 app.use("/api/v1/seo", seoRouter);
+app.use("/api/v1/reports", reportsRouter);
 
 
 export { app }

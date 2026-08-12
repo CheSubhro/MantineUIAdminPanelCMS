@@ -1,117 +1,106 @@
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { showToast } from '../utils/toast';
+import api from '../services/api';
 
-export function useReports(initialData = {}) {
+export function useReports() {
     
     const [reportType, setReportType] = useState('post-performance');
     const [timeRange, setTimeRange] = useState('30days');
     const [customDateRange, setCustomDateRange] = useState({ from: '', to: '' });
     const [searchQuery, setSearchQuery] = useState('');
-    const [loading, setLoading] = useState(false); // Loading state for spinner
+    const [loading, setLoading] = useState(false);
+    
+    // Raw report data fetched from backend API
+    const [rawReportData, setRawReportData] = useState([]);
 
-    // Mock/Initial raw data sources
-    const posts = initialData.posts || [
-        { id: 1, title: 'Mastering React and Vite', author: 'Subhro Mondal', category: 'Development', views: 12450, engagement: '85%', date: '2026-06-15' },
-        { id: 2, title: 'Mantine UI Best Practices', author: 'Siltu', category: 'Design', views: 8320, engagement: '78%', date: '2026-06-20' },
-        { id: 3, title: 'Advanced State Management', author: 'Subhro Mondal', category: 'Development', views: 9540, engagement: '82%', date: '2026-07-01' },
-    ];
-
-    const activities = initialData.activities || [
-        { id: 1, user: 'Subhro Mondal', action: 'Created Post', target: 'Mastering React and Vite', timestamp: '2026-07-28 10:30 AM' },
-        { id: 2, user: 'Siltu', action: 'Updated Settings', target: 'General Config', timestamp: '2026-07-29 02:15 PM' },
-    ];
-
-    const trafficData = initialData.trafficData || {
-        totalViews: 45230,
-        uniqueVisitors: 12450,
-        sources: [
-            { source: 'Search Engines', percentage: 45 },
-            { source: 'Direct', percentage: 25 },
-            { source: 'Social Media', percentage: 20 },
-            { source: 'Referral', percentage: 10 },
-        ]
-    };
-
-    // Filter handlers with simulated async loading effect for the Spinner
-    const handleSetReportType = useCallback((type) => {
+    // Fetch reports from backend API whenever reportType or timeRange changes
+    const fetchReports = useCallback(async (type, range) => {
         setLoading(true);
-        setReportType(type);
-        setTimeout(() => setLoading(false), 300); // Simulated loading delay
-    }, []);
+        try {
+            const response = await api.get(`/reports`, {
+                params: {
+                    reportType: type,
+                    timeRange: range,
+                },
+            });
 
-    const handleSetTimeRange = useCallback((range) => {
-        setLoading(true);
-        setTimeRange(range);
-        setTimeout(() => setLoading(false), 300);
-    }, []);
-
-    // Report Computations
-    const postPerformanceReport = useMemo(() => {
-        return posts.filter(post => 
-            post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            post.author.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [posts, searchQuery]);
-
-    const authorContributionReport = useMemo(() => {
-        const authorMap = {};
-        posts.forEach(post => {
-            if (!authorMap[post.author]) {
-                authorMap[post.author] = { author: post.author, totalPosts: 0, totalViews: 0 };
-            }
-            authorMap[post.author].totalPosts += 1;
-            authorMap[post.author].totalViews += post.views;
-        });
-        return Object.values(authorMap).filter(item => 
-            item.author.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [posts, searchQuery]);
-
-    const categoryBreakdownReport = useMemo(() => {
-        const categoryMap = {};
-        posts.forEach(post => {
-            if (!categoryMap[post.category]) {
-                categoryMap[post.category] = { category: post.category, count: 0, views: 0 };
-            }
-            categoryMap[post.category].count += 1;
-            categoryMap[post.category].views += post.views;
-        });
-        return Object.values(categoryMap).filter(item => 
-            item.category.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [posts, searchQuery]);
-
-    const userActivityReport = useMemo(() => {
-        return activities.filter(act => 
-            act.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            act.action.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [activities, searchQuery]);
-
-    const currentReportData = useMemo(() => {
-        switch (reportType) {
-            case 'post-performance':
-                return postPerformanceReport;
-            case 'author-contribution':
-                return authorContributionReport;
-            case 'category-breakdown':
-                return categoryBreakdownReport;
-            case 'traffic-summary':
-                return [trafficData];
-            case 'activity-log':
-                return userActivityReport;
-            default:
-                return [];
+            const result = response.data.data || response.data;
+            // backend returns { reportType, timeRange, data: [...] }
+            const dataList = result.data || result;
+            setRawReportData(Array.isArray(dataList) ? dataList : [dataList]);
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || 'Failed to fetch reports.';
+            showToast.error('Fetch Failed', errorMessage);
+            setRawReportData([]);
+        } finally {
+            setLoading(false);
         }
-    }, [reportType, postPerformanceReport, authorContributionReport, categoryBreakdownReport, trafficData, userActivityReport]);
+    }, []);
+
+    // Trigger fetch on reportType or timeRange change
+    useEffect(() => {
+        fetchReports(reportType, timeRange);
+    }, [reportType, timeRange, fetchReports]);
+
+    // Handle Report Type Change
+    const handleSetReportType = useCallback((type) => {
+        setReportType(type);
+    }, []);
+
+    // Handle Time Range Change
+    const handleSetTimeRange = useCallback((range) => {
+        setTimeRange(range);
+    }, []);
+
+    // Filter report data based on search query dynamically
+    const currentReportData = useMemo(() => {
+        if (!Array.isArray(rawReportData)) return [];
+
+        if (!searchQuery.trim()) return rawReportData;
+
+        const query = searchQuery.toLowerCase();
+
+        return rawReportData.filter((item) => {
+            return Object.values(item).some((val) => {
+                if (typeof val === 'string' || typeof val === 'number') {
+                    return String(val).toLowerCase().includes(query);
+                }
+                // Handle nested objects/arrays like sources in trafficSummary if needed
+                if (Array.isArray(val)) {
+                    return val.some(subItem => 
+                        Object.values(subItem).some(subVal => 
+                            String(subVal).toLowerCase().includes(query)
+                        )
+                    );
+                }
+                return false;
+            });
+        });
+    }, [rawReportData, searchQuery]);
 
     const exportAsCSV = useCallback((fileName = 'report.csv') => {
         if (!currentReportData.length) return;
         
-        const headers = Object.keys(currentReportData[0]);
+        // Flatten or pick headers safely
+        const flatData = currentReportData.map(item => {
+            if (item && typeof item === 'object' && !Array.isArray(item)) {
+                const copy = { ...item };
+                // Convert arrays/objects to string for CSV
+                Object.keys(copy).forEach(k => {
+                    if (typeof copy[k] === 'object') {
+                        copy[k] = JSON.stringify(copy[k]);
+                    }
+                });
+                return copy;
+            }
+            return { value: item };
+        });
+
+        const headers = Object.keys(flatData[0]);
         const csvRows = [
             headers.join(','),
-            ...currentReportData.map(row => headers.map(header => JSON.stringify(row[header] || '')).join(','))
+            ...flatData.map(row => headers.map(header => JSON.stringify(row[header] || '')).join(','))
         ];
         
         const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
@@ -140,5 +129,6 @@ export function useReports(initialData = {}) {
         loading,
         exportAsCSV,
         exportAsPDF,
+        refetchReports: () => fetchReports(reportType, timeRange),
     };
 }
