@@ -4,7 +4,7 @@ import { Card, Badge, EmptyState } from '../../../components/common';
 import { IconChartLine } from '@tabler/icons-react';
 
 export function TrafficChart({ trafficOverTime, trafficSources }) {
-    
+
     const hasData = trafficOverTime && trafficOverTime.length > 0;
 
     return (
@@ -25,7 +25,7 @@ export function TrafficChart({ trafficOverTime, trafficSources }) {
                         ))}
                     </Stack>
                 ) : (
-                    <EmptyState title="No Traffic Data" description="No traffic logs found for this period." icon={IconChartLine} />
+                    <EmptyState title="No Traffic Data" description="No traffic logs found for this period." icon={<IconChartLine size={48} />} />
                 )}
             </Card>
 

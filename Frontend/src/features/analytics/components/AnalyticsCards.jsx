@@ -3,13 +3,20 @@ import { SimpleGrid, Group, Text, ThemeIcon } from '@mantine/core';
 import { IconEye, IconUsers, IconFileText, IconArticle } from '@tabler/icons-react';
 import { Card, Badge } from '../../../components/common';
 
-export function AnalyticsCards({ metrics }) {
-    
+export function AnalyticsCards({ metrics = {} }) {
+
+    // Safely extract values with default fallbacks to prevent undefined errors
+    const totalViews = metrics?.totalViews ?? 0;
+    const uniqueVisitors = metrics?.uniqueVisitors ?? 0;
+    const totalPosts = metrics?.totalPosts ?? 0;
+    const totalPages = metrics?.totalPages ?? 0;
+    const totalUsers = metrics?.totalUsers ?? 0;
+
     const items = [
-        { title: 'Total Views', value: metrics.totalViews.toLocaleString(), icon: IconEye, color: 'blue', change: '+12%' },
-        { title: 'Unique Visitors', value: metrics.uniqueVisitors.toLocaleString(), icon: IconUsers, color: 'teal', change: '+8%' },
-        { title: 'Total Posts & Pages', value: (metrics.totalPosts + metrics.totalPages), icon: IconFileText, color: 'violet', change: 'Active' },
-        { title: 'Total Authors', value: metrics.totalUsers, icon: IconArticle, color: 'grape', change: 'Stable' },
+        { title: 'Total Views', value: totalViews.toLocaleString(), icon: IconEye, color: 'blue', change: '+12%' },
+        { title: 'Unique Visitors', value: uniqueVisitors.toLocaleString(), icon: IconUsers, color: 'teal', change: '+8%' },
+        { title: 'Total Posts & Pages', value: (totalPosts + totalPages), icon: IconFileText, color: 'violet', change: 'Active' },
+        { title: 'Total Authors', value: totalUsers, icon: IconArticle, color: 'grape', change: 'Stable' },
     ];
 
     return (
