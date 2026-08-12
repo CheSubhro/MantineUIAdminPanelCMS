@@ -1,9 +1,11 @@
 
 import { Group, Text, ActionIcon } from '@mantine/core';
 import { IconCheck, IconTrash } from '@tabler/icons-react';
-import { Card, Badge, Tooltip } from '../../../components/common'; 
+import { Card, Badge, Tooltip } from '../../../components/common';
 
 export function NotificationItem({ item, onMarkAsRead, onDelete }) {
+    const notificationId = item._id || item.id;
+
     return (
         <Card
             p="md"
@@ -17,18 +19,20 @@ export function NotificationItem({ item, onMarkAsRead, onDelete }) {
                         {item.unread && <Badge size="xs" color="blue">New</Badge>}
                     </Group>
                     <Text size="sm" c="dimmed">{item.description}</Text>
-                    <Text size="xs" c="blue" mt={4}>{item.time}</Text>
+                    <Text size="xs" c="blue" mt={4}>
+                        {item.createdAt ? new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : item.time}
+                    </Text>
                 </div>
                 <Group gap="xs">
                     {item.unread && (
                         <Tooltip label="Mark as read">
-                            <ActionIcon variant="subtle" color="blue" onClick={() => onMarkAsRead(item.id)}>
+                            <ActionIcon variant="subtle" color="blue" onClick={() => onMarkAsRead(notificationId)}>
                                 <IconCheck size={16} />
                             </ActionIcon>
                         </Tooltip>
                     )}
                     <Tooltip label="Delete notification">
-                        <ActionIcon variant="subtle" color="red" onClick={() => onDelete(item.id)}>
+                        <ActionIcon variant="subtle" color="red" onClick={() => onDelete(notificationId)}>
                             <IconTrash size={16} />
                         </ActionIcon>
                     </Tooltip>

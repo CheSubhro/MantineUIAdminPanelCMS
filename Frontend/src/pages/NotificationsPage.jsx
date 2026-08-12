@@ -8,12 +8,14 @@ import {
     Input,
     EmptyState,
     Pagination,
-    ErrorBoundary
-} from '../components/common'; 
+    ErrorBoundary,
+    Spinner
+} from '../components/common';
 
 export default function NotificationsPage() {
     const {
         notifications,
+        loading,
         searchQuery,
         setSearchQuery,
         markAsRead,
@@ -39,23 +41,29 @@ export default function NotificationsPage() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
 
-                <Stack gap="sm">
-                    {notifications.length > 0 ? (
-                        notifications.map((item) => (
-                            <NotificationItem
-                                key={item.id}
-                                item={item}
-                                onMarkAsRead={markAsRead}
-                                onDelete={deleteNotification}
+                {loading ? (
+                    <div className="flex justify-center p-12">
+                        <Spinner size="lg" />
+                    </div>
+                ) : (
+                    <Stack gap="sm">
+                        {notifications.length > 0 ? (
+                            notifications.map((item) => (
+                                <NotificationItem
+                                    key={item._id || item.id}
+                                    item={item}
+                                    onMarkAsRead={markAsRead}
+                                    onDelete={deleteNotification}
+                                />
+                            ))
+                        ) : (
+                            <EmptyState
+                                title="No notifications found"
+                                description="You're all caught up! There are no matching notifications to display."
                             />
-                        ))
-                    ) : (
-                        <EmptyState
-                            title="No notifications found"
-                            description="You're all caught up! There are no matching notifications to display."
-                        />
-                    )}
-                </Stack>
+                        )}
+                    </Stack>
+                )}
 
                 {notifications.length > 0 && (
                     <Group justify="center" mt="xl">

@@ -1,27 +1,17 @@
 
 import { Group, Burger, Text, ActionIcon, Avatar, Menu, Box, ScrollArea } from '@mantine/core';
-import { IconBell, IconSettings, IconLogout, IconUser, IconCheck } from '@tabler/icons-react';
+import { IconBell, IconSettings, IconLogout, IconUser } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip, Badge, ThemeToggle } from '../../common';
-import { useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
+import { useNotifications } from '../../../hooks/useNotifications';
 
-export default function Navbar({ opened, toggle, user = { name: 'Admin User', role: 'Super Admin' } }) {
-
+export default function Navbar({ opened, toggle, user = { name: 'Admin', role: 'Admin' } }) {
     const navigate = useNavigate();
     const { logout } = useAuth();
-
-    const [notifications, setNotifications] = useState([
-        { id: 1, title: 'New user registered', time: '5m ago', unread: true },
-        { id: 2, title: 'New post submitted', time: '1h ago', unread: true },
-        { id: 3, title: 'Server backup successful', time: '3h ago', unread: false },
-    ]);
+    const { notifications, markAllAsRead } = useNotifications();
 
     const unreadCount = notifications.filter(n => n.unread).length;
-
-    const markAllAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, unread: false })));
-    };
 
     return (
         <Group h="100%" px="md" justify="space-between" bg="var(--mantine-color-body)" style={{ borderBottom: '1px solid #eaeaea' }}>
@@ -79,11 +69,13 @@ export default function Navbar({ opened, toggle, user = { name: 'Admin User', ro
                         <ScrollArea.Autosize mah={250}>
                             {notifications.length > 0 ? (
                                 notifications.map((item) => (
-                                    <Menu.Item key={item.id} style={{ backgroundColor: item.unread ? 'var(--mantine-color-default-hover)' : 'transparent' }}>
+                                    <Menu.Item key={item._id || item.id} style={{ backgroundColor: item.unread ? 'var(--mantine-color-default-hover)' : 'transparent' }}>
                                         <Group justify="between" wrap="nowrap">
                                             <div>
                                                 <Text size="sm" fw={item.unread ? 600 : 400}>{item.title}</Text>
-                                                <Text size="xs" c="dimmed">{item.time}</Text>
+                                                <Text size="xs" c="dimmed">
+                                                    {item.createdAt ? new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : item.time}
+                                                </Text>
                                             </div>
                                             {item.unread && <Badge size="dot" color="blue" />}
                                         </Group>
@@ -98,7 +90,7 @@ export default function Navbar({ opened, toggle, user = { name: 'Admin User', ro
                         <Menu.Item
                             ta="center"
                             c="blue"
-                            style={{ fontWeight: 500 }}
+                            style={{ fontWeight: '500' }}
                             onClick={() => navigate('/notifications')}
                         >
                             View all notifications
